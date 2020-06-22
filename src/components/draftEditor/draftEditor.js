@@ -4,6 +4,9 @@ import "draft-js/dist/Draft.css";
 
 import styles from "./draftEditor.module.scss";
 
+// Components
+import BtnControls from "./BtnControls/BtnControls";
+
 const DraftEditor = () => {
   const [editorState, setEditorState] = useState(() =>
     EditorState.createEmpty()
@@ -20,20 +23,12 @@ const DraftEditor = () => {
     return "not-handled";
   };
 
-  const changeStyle = (style) => {
-    update(RichUtils.toggleInlineStyle(editorState, `${style}`));
-  };
+  const update = (editorState) => setEditorState(editorState);
 
   const onTab = (e) => {
     const maxDepth = 4;
     update(RichUtils.onTab(e, editorState, maxDepth));
   };
-
-  const toggleBlockType = (blockType) => {
-    update(RichUtils.toggleBlockType(editorState, blockType));
-  };
-
-  const update = (editorState) => setEditorState(editorState);
 
   const pluarisBlockQuoteStyle = (contentBlock) => {
     const type = contentBlock.getType();
@@ -59,72 +54,9 @@ const DraftEditor = () => {
     }
   };
 
-  const styleOptions = [
-    {
-      label: "B",
-      style: "BOLD",
-    },
-    {
-      label: "I",
-      style: "ITALIC",
-    },
-    {
-      label: "U",
-      style: "UNDERLINE",
-    },
-    {
-      label: "S",
-      style: "STRIKETHROUGH",
-    },
-  ];
-
-  const blockTypeOptions = [
-    {
-      label: "H1",
-      style: "header-one",
-    },
-    {
-      label: "H2",
-      style: "header-two",
-    },
-    {
-      label: "H3",
-      style: "header-three",
-    },
-    {
-      label: "Blockquote",
-      style: "blockquote",
-    },
-    {
-      label: "UL",
-      style: "unordered-list-item",
-    },
-    {
-      label: "OL",
-      style: "ordered-list-item",
-    },
-    {
-      label: "Code Block",
-      style: "code-block",
-    },
-  ];
-
   return (
     <>
-      {blockTypeOptions.map((option) => {
-        return (
-          <button type="button" onClick={() => toggleBlockType(option.style)}>
-            {option.label}
-          </button>
-        );
-      })}
-      {styleOptions.map((option) => {
-        return (
-          <button type="button" onClick={() => changeStyle(option.style)}>
-            {option.label}
-          </button>
-        );
-      })}
+      <BtnControls update={update} editorState={editorState} />
       <Editor
         editorState={editorState}
         onTab={onTab}
