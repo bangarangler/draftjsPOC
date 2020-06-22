@@ -76,10 +76,6 @@ const DraftEditor = () => {
       label: "S",
       style: "STRIKETHROUGH",
     },
-    {
-      label: "Code",
-      style: "CODE",
-    },
   ];
 
   const blockTypeOptions = [
@@ -135,6 +131,7 @@ const DraftEditor = () => {
         handleKeyCommand={handleKeyCommand}
         onChange={update}
         blockStyleFn={pluarisBlockQuoteStyle}
+        spellCheck={true}
       />
     </>
   );
