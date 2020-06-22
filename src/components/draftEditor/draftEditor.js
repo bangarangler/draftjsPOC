@@ -1,5 +1,12 @@
-import React, { useState } from "react";
-import { Editor, EditorState, RichUtils } from "draft-js";
+import React, { useState, useEffect } from "react";
+import {
+  Editor,
+  EditorState,
+  RichUtils,
+  convertToRaw,
+  convertFromRaw,
+  ContentState,
+} from "draft-js";
 import "draft-js/dist/Draft.css";
 
 import styles from "./draftEditor.module.scss";
@@ -11,6 +18,25 @@ const DraftEditor = () => {
   const [editorState, setEditorState] = useState(() =>
     EditorState.createEmpty()
   );
+
+  // Pull data from storage to pre fill in the editor.
+  useEffect(() => {
+    if (localStorage.getItem("content")) {
+      console.log(JSON.parse(localStorage.getItem("content")));
+      setEditorState(
+        EditorState.createWithContent(
+          convertFromRaw(JSON.parse(localStorage.getItem("content")))
+        )
+      );
+    }
+  }, []);
+
+  // ADD DATA TO STORAGE
+  useEffect(() => {
+    const contentState = editorState.getCurrentContent();
+    const rawContentState = convertToRaw(contentState);
+    localStorage.setItem("content", JSON.stringify(rawContentState));
+  }, [editorState]);
 
   const handleKeyCommand = (command, editorState) => {
     const newState = RichUtils.handleKeyCommand(editorState, command);
