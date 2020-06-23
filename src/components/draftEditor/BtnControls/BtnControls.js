@@ -1,7 +1,10 @@
-import React from "react";
-import { RichUtils } from "draft-js";
+import React, { useState } from "react";
+import { RichUtils, EditorState, ContentState, Modifier } from "draft-js";
 
 const BtnControls = ({ update, editorState }) => {
+  const [showLinkInput, setshowLinkInput] = useState(true);
+  const [inputValue, setInputValue] = useState("");
+
   const changeStyle = (style) => {
     update(RichUtils.toggleInlineStyle(editorState, `${style}`));
   };
@@ -9,6 +12,59 @@ const BtnControls = ({ update, editorState }) => {
   const toggleBlockType = (blockType) => {
     update(RichUtils.toggleBlockType(editorState, blockType));
   };
+
+  // ---------- LINKS SECTION ---------- //
+  const getEntityAtSelection = (editorState) => {
+    const selectionState = editorState.getSelection();
+    const selectionKey = selectionState.getStartKey();
+
+    // The block in which the selection starts
+    const block = ContentState.getBlockForKey(selectionKey);
+
+    // Entity key at the start selection
+    const entityKey = block.getENtityAt(selectionState.getStartOffset());
+    if (entityKey) {
+      // The actual entity instance
+      const entityInstance = ContentState.getEntity(entityKey);
+      const entityInfo = {
+        type: entityInstance.getType(),
+        mutability: entityInstance.getMutability(),
+        data: entityInstance.getData(),
+      };
+      console.log(JSON.stringify(entityInfo, null, 4));
+    } else {
+      console.log("No entity present at current selection");
+    }
+  };
+
+  const setEntityAtSelection = ({ type, mutability, data }) => {
+    const contentstate = editorState.getCurrentContent();
+    // Returns contentState record updated to include the newly created DraftEntity record in it's entitymap
+    let newContentState = contentstate.createEntity(type, mutability, {
+      url: data,
+    });
+
+    // call getLastCreatedEntityKey to get the key of the newly created DraftEntity record.
+    const entityKey = contentstate.getLastCreatedEntityKey();
+    const selectionState = editorState.getSelection();
+
+    // add the created entity to the current selection, for a new contentState
+    newContentState = Modifier.applyEntity(
+      newContentState,
+      selectionState,
+      entityKey
+    );
+
+    // Add newContentState to the existing editor state for a new editor state
+    const newEditorState = EditorState.push(
+      editorState,
+      newContentState,
+      "apply-entity"
+    );
+
+    update(newEditorState);
+  };
+  // ---------- END LINKS SECTION ---------- //
 
   const styleOptions = [
     {
@@ -95,6 +151,25 @@ const BtnControls = ({ update, editorState }) => {
           </button>
         );
       })}
+      <button onClick={() => setshowLinkInput(!showLinkInput)}>+Link</button>
+      <button>-Link</button>
+      {showLinkInput && (
+        <div>
+          <input
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            type="text"
+          />
+          <button
+            onClick={() => {
+              setshowLinkInput(false);
+              setEntityAtSelection;
+            }}
+          >
+            +
+          </button>
+        </div>
+      )}
     </div>
   );
 };
