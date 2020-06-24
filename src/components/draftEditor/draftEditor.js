@@ -35,23 +35,24 @@ const DraftEditor = () => {
   );
 
   // Pull data from storage to pre fill in the editor.
-  // useEffect(() => {
-  //   if (localStorage.getItem("content")) {
-  //     console.log(JSON.parse(localStorage.getItem("content")));
-  //     setEditorState(
-  //       EditorState.createWithContent(
-  //         convertFromRaw(JSON.parse(localStorage.getItem("content")))
-  //       )
-  //     );
-  //   }
-  // }, []);
+  useEffect(() => {
+    if (localStorage.getItem("content")) {
+      console.log(JSON.parse(localStorage.getItem("content")));
+      setEditorState(
+        EditorState.createWithContent(
+          convertFromRaw(JSON.parse(localStorage.getItem("content"))),
+          decorator
+        )
+      );
+    }
+  }, []);
 
   // ADD DATA TO STORAGE
-  // useEffect(() => {
-  //   const contentState = editorState.getCurrentContent();
-  //   const rawContentState = convertToRaw(contentState);
-  //   localStorage.setItem("content", JSON.stringify(rawContentState));
-  // }, [editorState]);
+  useEffect(() => {
+    const contentState = editorState.getCurrentContent();
+    const rawContentState = convertToRaw(contentState);
+    localStorage.setItem("content", JSON.stringify(rawContentState));
+  }, [editorState]);
 
   const handleKeyCommand = (command, editorState) => {
     console.log("command :>> ", command);
@@ -199,6 +200,7 @@ const DraftEditor = () => {
         onChange={update}
         blockStyleFn={pluarisBlockQuoteStyle}
         spellCheck={true}
+        decorators={decorator}
       />
     </>
   );
@@ -225,6 +227,7 @@ const Link = (props) => {
       target="_blank"
       rel="nofollow noreferrer"
       styles={{ color: "blue" }}
+      onClick={() => window.open(url, "_blank")}
     >
       {props.children}
     </a>
