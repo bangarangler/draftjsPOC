@@ -13,6 +13,10 @@ const BtnControls = ({ update, editorState }) => {
     update(RichUtils.toggleBlockType(editorState, blockType));
   };
 
+  const toggleLink = (something) => {
+    update(RichUtils.toggleLink(editorState, something));
+  };
+
   // ---------- LINKS SECTION ---------- //
   // const getEntityAtSelection = (editorState) => {
   //   const selectionState = editorState.getSelection();
@@ -125,11 +129,6 @@ const BtnControls = ({ update, editorState }) => {
       label: "Code Block",
       style: "code-block",
     },
-    {
-      id: "8",
-      label: "Link",
-      style: "add-link",
-    },
   ];
 
   return (
@@ -156,32 +155,6 @@ const BtnControls = ({ update, editorState }) => {
           </button>
         );
       })}
-
-      {/* <button onClick={() => {}}>+Link</button> */}
-
-      {/* <button onClick={() => setshowLinkInput(!showLinkInput)}>+Link</button>
-      <button>-Link</button>
-      {showLinkInput && (
-        <div>
-          <input
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            type="text"
-          />
-          <button
-            onClick={() => {
-              setshowLinkInput(false);
-              setEntityAtSelection({
-                type: "link",
-                mutability: "mutable",
-                data: "inputValue",
-              });
-            }}
-          >
-            +
-          </button>
-        </div>
-      )} */}
     </div>
   );
 };
