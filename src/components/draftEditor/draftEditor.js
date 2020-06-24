@@ -35,23 +35,23 @@ const DraftEditor = () => {
   );
 
   // Pull data from storage to pre fill in the editor.
-  useEffect(() => {
-    if (localStorage.getItem("content")) {
-      console.log(JSON.parse(localStorage.getItem("content")));
-      setEditorState(
-        EditorState.createWithContent(
-          convertFromRaw(JSON.parse(localStorage.getItem("content")))
-        )
-      );
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (localStorage.getItem("content")) {
+  //     console.log(JSON.parse(localStorage.getItem("content")));
+  //     setEditorState(
+  //       EditorState.createWithContent(
+  //         convertFromRaw(JSON.parse(localStorage.getItem("content")))
+  //       )
+  //     );
+  //   }
+  // }, []);
 
   // ADD DATA TO STORAGE
-  useEffect(() => {
-    const contentState = editorState.getCurrentContent();
-    const rawContentState = convertToRaw(contentState);
-    localStorage.setItem("content", JSON.stringify(rawContentState));
-  }, [editorState]);
+  // useEffect(() => {
+  //   const contentState = editorState.getCurrentContent();
+  //   const rawContentState = convertToRaw(contentState);
+  //   localStorage.setItem("content", JSON.stringify(rawContentState));
+  // }, [editorState]);
 
   const handleKeyCommand = (command, editorState) => {
     console.log("command :>> ", command);
@@ -199,7 +199,6 @@ const DraftEditor = () => {
         onChange={update}
         blockStyleFn={pluarisBlockQuoteStyle}
         spellCheck={true}
-        keyBindingFn={keyBindingFn}
       />
     </>
   );
@@ -221,7 +220,12 @@ function findLinkEntities(contentBlock, callback, contentState) {
 const Link = (props) => {
   const { url } = props.contentState.getEntity(props.entityKey).getData();
   return (
-    <a href={url} styles={{ color: "blue" }}>
+    <a
+      href={url}
+      target="_blank"
+      rel="nofollow noreferrer"
+      styles={{ color: "blue" }}
+    >
       {props.children}
     </a>
   );
