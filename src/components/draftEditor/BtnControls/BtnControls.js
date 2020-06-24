@@ -14,56 +14,56 @@ const BtnControls = ({ update, editorState }) => {
   };
 
   // ---------- LINKS SECTION ---------- //
-  const getEntityAtSelection = (editorState) => {
-    const selectionState = editorState.getSelection();
-    const selectionKey = selectionState.getStartKey();
+  // const getEntityAtSelection = (editorState) => {
+  //   const selectionState = editorState.getSelection();
+  //   const selectionKey = selectionState.getStartKey();
 
-    // The block in which the selection starts
-    const block = ContentState.getBlockForKey(selectionKey);
+  //   // The block in which the selection starts
+  //   const block = ContentState.getBlockForKey(selectionKey);
 
-    // Entity key at the start selection
-    const entityKey = block.getENtityAt(selectionState.getStartOffset());
-    if (entityKey) {
-      // The actual entity instance
-      const entityInstance = ContentState.getEntity(entityKey);
-      const entityInfo = {
-        type: entityInstance.getType(),
-        mutability: entityInstance.getMutability(),
-        data: entityInstance.getData(),
-      };
-      console.log(JSON.stringify(entityInfo, null, 4));
-    } else {
-      console.log("No entity present at current selection");
-    }
-  };
+  //   // Entity key at the start selection
+  //   const entityKey = block.getENtityAt(selectionState.getStartOffset());
+  //   if (entityKey) {
+  //     // The actual entity instance
+  //     const entityInstance = ContentState.getEntity(entityKey);
+  //     const entityInfo = {
+  //       type: entityInstance.getType(),
+  //       mutability: entityInstance.getMutability(),
+  //       data: entityInstance.getData(),
+  //     };
+  //     console.log(JSON.stringify(entityInfo, null, 4));
+  //   } else {
+  //     console.log("No entity present at current selection");
+  //   }
+  // };
 
-  const setEntityAtSelection = ({ type, mutability, data }) => {
-    const contentstate = editorState.getCurrentContent();
-    // Returns contentState record updated to include the newly created DraftEntity record in it's entitymap
-    let newContentState = contentstate.createEntity(type, mutability, {
-      url: data,
-    });
+  // const setEntityAtSelection = ({ type, mutability, data }) => {
+  //   const contentstate = editorState.getCurrentContent();
+  //   // Returns contentState record updated to include the newly created DraftEntity record in it's entitymap
+  //   let newContentState = contentstate.createEntity(type, mutability, {
+  //     url: data,
+  //   });
 
-    // call getLastCreatedEntityKey to get the key of the newly created DraftEntity record.
-    const entityKey = contentstate.getLastCreatedEntityKey();
-    const selectionState = editorState.getSelection();
+  //   // call getLastCreatedEntityKey to get the key of the newly created DraftEntity record.
+  //   const entityKey = contentstate.getLastCreatedEntityKey();
+  //   const selectionState = editorState.getSelection();
 
-    // add the created entity to the current selection, for a new contentState
-    newContentState = Modifier.applyEntity(
-      newContentState,
-      selectionState,
-      entityKey
-    );
+  //   // add the created entity to the current selection, for a new contentState
+  //   newContentState = Modifier.applyEntity(
+  //     newContentState,
+  //     selectionState,
+  //     entityKey
+  //   );
 
-    // Add newContentState to the existing editor state for a new editor state
-    const newEditorState = EditorState.push(
-      editorState,
-      newContentState,
-      "apply-entity"
-    );
+  //   // Add newContentState to the existing editor state for a new editor state
+  //   const newEditorState = EditorState.push(
+  //     editorState,
+  //     newContentState,
+  //     "apply-entity"
+  //   );
 
-    update(newEditorState);
-  };
+  //   update(newEditorState);
+  // };
   // ---------- END LINKS SECTION ---------- //
 
   const styleOptions = [
@@ -125,6 +125,11 @@ const BtnControls = ({ update, editorState }) => {
       label: "Code Block",
       style: "code-block",
     },
+    {
+      id: "8",
+      label: "Link",
+      style: "add-link",
+    },
   ];
 
   return (
@@ -151,7 +156,10 @@ const BtnControls = ({ update, editorState }) => {
           </button>
         );
       })}
-      <button onClick={() => setshowLinkInput(!showLinkInput)}>+Link</button>
+
+      {/* <button onClick={() => {}}>+Link</button> */}
+
+      {/* <button onClick={() => setshowLinkInput(!showLinkInput)}>+Link</button>
       <button>-Link</button>
       {showLinkInput && (
         <div>
@@ -163,13 +171,17 @@ const BtnControls = ({ update, editorState }) => {
           <button
             onClick={() => {
               setshowLinkInput(false);
-              setEntityAtSelection;
+              setEntityAtSelection({
+                type: "link",
+                mutability: "mutable",
+                data: "inputValue",
+              });
             }}
           >
             +
           </button>
         </div>
-      )}
+      )} */}
     </div>
   );
 };

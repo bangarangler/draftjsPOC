@@ -9,6 +9,8 @@ import {
 } from "draft-js";
 import "draft-js/dist/Draft.css";
 
+import { addLinkPlugin, keyBindingFn } from "../../plugins/addLinkPlugin";
+
 import styles from "./draftEditor.module.scss";
 
 // Components
@@ -18,6 +20,8 @@ const DraftEditor = () => {
   const [editorState, setEditorState] = useState(() =>
     EditorState.createEmpty()
   );
+
+  const plugins = [addLinkPlugin];
 
   // Pull data from storage to pre fill in the editor.
   useEffect(() => {
@@ -39,7 +43,42 @@ const DraftEditor = () => {
   }, [editorState]);
 
   const handleKeyCommand = (command, editorState) => {
+    console.log("command :>> ", command);
+
     const newState = RichUtils.handleKeyCommand(editorState, command);
+    if (command === "add-link") {
+      console.log("ADD LINK TRUE");
+      let link = window.prompt("Paste the link -");
+      const selection = editorState.getSelection();
+      console.log("link :>> ", link);
+      if (!link) {
+        console.log("NO LINK");
+        update(RichUtils.toggleLink(editorState, selection, null));
+        return "handled";
+      }
+      console.log("Link present");
+      const content = editorState.getCurrentContent();
+      console.log("content :>> ", content);
+      const contentWithEntity = content.createEntity("LINK", "MUTABLE", {
+        url: link,
+      });
+      console.log("contentWithEntity :>> ", contentWithEntity);
+      const newEditorState = EditorState.push(
+        editorState,
+        contentWithEntity,
+        "create-entity"
+      );
+      console.log("newEditorState :>> ", newEditorState);
+      const entityKey = contentWithEntity.getLastCreatedEntityKey();
+      console.log("entityKey :>> ", entityKey);
+      console.log(
+        "RichUtils.toggleLink(newEditorState, selection, entityKey) :>> ",
+        RichUtils.toggleLink(newEditorState, selection, entityKey)
+      );
+      update(RichUtils.toggleLink(newEditorState, selection, entityKey));
+      console.log("State updated");
+      return "handled";
+    }
 
     if (newState) {
       console.log("newState :>> ", newState);
@@ -142,6 +181,8 @@ const DraftEditor = () => {
         onChange={update}
         blockStyleFn={pluarisBlockQuoteStyle}
         spellCheck={true}
+        // plugins={plugins}
+        keyBindingFn={keyBindingFn}
       />
     </>
   );
