@@ -5,11 +5,11 @@ import {
   RichUtils,
   convertToRaw,
   convertFromRaw,
-  ContentState,
+  CompositeDecorator,
 } from "draft-js";
 import "draft-js/dist/Draft.css";
 
-import { keyBindingFn } from "../../plugins/addLinkPlugin";
+import { handleLink, keyBindingFn } from "../../plugins/linkPlugin";
 
 import styles from "./draftEditor.module.scss";
 
@@ -17,8 +17,21 @@ import styles from "./draftEditor.module.scss";
 import BtnControls from "./BtnControls/BtnControls";
 
 const DraftEditor = () => {
-  const [editorState, setEditorState] = useState(() =>
-    EditorState.createEmpty()
+  // =============== FOR LINKS =============== //
+
+  const decorator = new CompositeDecorator([
+    {
+      strategy: findLinkEntities,
+      component: Link,
+    },
+  ]);
+  const [showURLInput, setshowURLInput] = useState(false);
+  const [urlValue, seturlValue] = useState("");
+
+  // =============== END FOR LINKS =============== //
+
+  const [editorState, setEditorState] = useState(
+    () => EditorState.createEmpty(decorator) // decorator is for links as well
   );
 
   // Pull data from storage to pre fill in the editor.
@@ -27,7 +40,8 @@ const DraftEditor = () => {
       console.log(JSON.parse(localStorage.getItem("content")));
       setEditorState(
         EditorState.createWithContent(
-          convertFromRaw(JSON.parse(localStorage.getItem("content")))
+          convertFromRaw(JSON.parse(localStorage.getItem("content"))),
+          decorator
         )
       );
     }
@@ -41,18 +55,15 @@ const DraftEditor = () => {
   }, [editorState]);
 
   const handleKeyCommand = (command, editorState) => {
+    console.log("command :>> ", command);
+
+    // =============== FOR LINKS =============== //
     const newState = RichUtils.handleKeyCommand(editorState, command);
     if (command === "add-link") {
-      let link = window.prompt("Paste the link -");
-      const selection = editorState.getSelection();
-      console.log("selection :>> ", selection);
-      if (!link) {
-        console.log("NO LINK");
-        update(RichUtils.toggleLink(editorState, selection, null));
-        return "handled";
-      }
-      return "handled";
+      return handleLink({ editorState: editorState, update: update });
     }
+
+    // =============== END FOR LINKS =============== //
 
     if (newState) {
       console.log("newState :>> ", newState);
@@ -68,58 +79,68 @@ const DraftEditor = () => {
     const maxDepth = 4;
     update(RichUtils.onTab(e, editorState, maxDepth));
   };
+  // =============== FOR LINKS =============== //
+  function promptForLink(e) {
+    e.preventDefault();
+    const selection = editorState.getSelection();
+    if (!selection.isCollapsed()) {
+      const contentState = editorState.getCurrentContent();
+      const startKey = editorState.getSelection().getStartKey();
+      const startOffset = editorState.getSelection().getStartOffset();
+      const blockWithLinkAtBeginning = contentState.getBlockForKey(startKey);
+      const linkKey = blockWithLinkAtBeginning.getEntityAt(startOffset);
 
-  // // LINKS
-  // const getEntityAtSelection = (editorState) => {
-  //   const selectionState = editorState.getSelection();
-  //   const selectionKey = selectionState.getStartKey();
+      let url = "";
+      if (linkKey) {
+        const linkInstance = contentState.getEntity(linkKey);
+        url = linkInstance.getData().url;
+      }
 
-  //   // The block in which the selection starts
-  //   const block = contentstate.getBlockForKey(selectionKey);
+      setshowURLInput(true);
+      seturlValue(url);
+      // setTimeout(() => this.refs.url.focus(), 0);
+    }
+  }
 
-  //   // Entity key at the start selection
-  //   const entityKey = block.getENtityAt(selectionState.getStartOffset());
-  //   if (entityKey) {
-  //     // The actual entity instance
-  //     const entityInstance = contentstate.getEntity(entityKey);
-  //     const entityInfo = {
-  //       type: entityInstance.getType(),
-  //       mutability: entityInstance.getMutability(),
-  //       data: entityInstance.getData(),
-  //     };
-  //     console.log(JSON.stringify(entityInfo, null, 4));
-  //   } else {
-  //     console.log("No entity present at current selection");
-  //   }
-  // };
+  function confirmLink(e) {
+    e.preventDefault();
+    const contentState = editorState.getCurrentContent();
+    const contentStateWithEntity = contentState.createEntity(
+      "LINK",
+      "MUTABLE",
+      { url: urlValue }
+    );
+    const entityKey = contentStateWithEntity.getLastCreatedEntityKey();
+    const newEditorState = EditorState.set(editorState, {
+      currentContent: contentStateWithEntity,
+    });
+    update(
+      RichUtils.toggleLink(
+        newEditorState,
+        newEditorState.getSelection(),
+        entityKey
+      )
+    );
+    setshowURLInput(false);
+    seturlValue("");
+    // setTimeout(() => this.refs.editor.focus(), 0);
+  }
 
-  // const setEntityAtSelection = ({ type, mutability, data }) => {
-  //   const contentstate = editorState.getCurrentContent();
-  //   // Returns contentState record updated to include the newly created DraftEntity record in it's entitymap
-  //   let newContentState = contentstate.createEntity(type, mutability, {
-  //     url: data,
-  //   });
+  function removeLink(e) {
+    e.preventDefault();
+    const selection = editorState.getSelection();
+    if (!selection.isCollapsed()) {
+      update(RichUtils.toggleLink(editorState, selection, null));
+    }
+  }
 
-  //   // call getLastCreatedEntityKey to get the key of the newly created DraftEntity record.
-  //   const entityKey = contentstate.getLastCreatedEntityKey();
-  //   const selectionState = editorState.getSelection();
+  function onLinkInputKeyDown(e) {
+    if (e.keyCode === 13) {
+      confirmLink(e);
+    }
+  }
 
-  //   // add the created entity to the current selection, for a new contentState
-  //   newContentState = Modifier.applyEntity(
-  //     newContentState,
-  //     selectionState,
-  //     entityKey
-  //   );
-
-  //   // Add newContentState to the existing editor state for a new editor state
-  //   const newEditorState = EditorState.push(
-  //     editorState,
-  //     newContentState,
-  //     "apply-entity"
-  //   );
-
-  //   update(newEditorState);
-  // };
+  // =============== END FOR LINKS =============== //
 
   const pluarisBlockQuoteStyle = (contentBlock) => {
     const type = contentBlock.getType();
@@ -147,7 +168,31 @@ const DraftEditor = () => {
 
   return (
     <>
-      <BtnControls update={update} editorState={editorState} />
+      <BtnControls
+        update={update}
+        editorState={editorState}
+        showURLInput={showURLInput}
+        urlValue={urlValue}
+      />
+
+      {/* =============== FOR LINKS =============== */}
+      <button onMouseDown={promptForLink} style={{ marginRight: 10 }}>
+        Add Link
+      </button>
+      <button onMouseDown={removeLink}>Remove Link</button>
+      {showURLInput && (
+        <>
+          <input
+            onChange={(e) => seturlValue(e.target.value)}
+            type="text"
+            value={urlValue}
+            onKeyDown={onLinkInputKeyDown}
+          />
+          <button onMouseDown={(e) => confirmLink(e)}>Confirm</button>
+        </>
+      )}
+      {/* =============== END FOR LINKS =============== */}
+
       <Editor
         editorState={editorState}
         onTab={onTab}
@@ -155,10 +200,36 @@ const DraftEditor = () => {
         onChange={update}
         blockStyleFn={pluarisBlockQuoteStyle}
         spellCheck={true}
-        keyBindingFn={keyBindingFn}
+        decorators={decorator}
       />
     </>
   );
 };
 
 export default DraftEditor;
+
+// =============== Link related functions =============== //
+function findLinkEntities(contentBlock, callback, contentState) {
+  contentBlock.findEntityRanges((character) => {
+    const entityKey = character.getEntity();
+    return (
+      entityKey !== null &&
+      contentState.getEntity(entityKey).getType() === "LINK"
+    );
+  }, callback);
+}
+
+const Link = (props) => {
+  const { url } = props.contentState.getEntity(props.entityKey).getData();
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="nofollow noreferrer"
+      styles={{ color: "blue" }}
+      onClick={() => window.open(url, "_blank")}
+    >
+      {props.children}
+    </a>
+  );
+};
