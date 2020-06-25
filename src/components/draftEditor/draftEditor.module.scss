@@ -1,5 +1,17 @@
-.testing {
-  background: hotpink;
+.btnWrapper {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  position: relative;
+  margin-bottom: 40px;
+  width: 100%;
+  justify-content: center;
+  height: 100%;
+
+  box-sizing: border-box;
+  * {
+    box-sizing: border-box;
+  }
 }
 
 .blockQuote {

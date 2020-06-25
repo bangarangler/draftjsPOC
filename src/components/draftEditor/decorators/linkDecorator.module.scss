@@ -1,0 +1,32 @@
+.draftLink {
+  color: blue;
+  text-decoration: underline;
+}
+
+.linkInput__div {
+  position: absolute;
+  top: 100%;
+  z-index: 1;
+  width: 100%;
+  display: flex;
+  max-width: 100%;
+  padding: 2px 10px;
+}
+.linkInput__input {
+  flex-grow: 1;
+  margin-right: 10px;
+}
+
+.btnControls__btn {
+  border: none;
+  padding: 7px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  .btnControls__icon {
+    font-size: 0.75rem;
+  }
+  &:hover {
+    background: #ccc;
+  }
+}
