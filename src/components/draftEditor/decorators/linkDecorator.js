@@ -85,10 +85,16 @@ export const LinkControls = ({
 
   return (
     <>
-      <button className={styles.btnControls__btn} onMouseDown={promptForLink}>
+      <button
+        className={styles.btnControls__btn}
+        onMouseDown={(e) => promptForLink(e)}
+      >
         <FaLink className={styles.btnControls__icon} />
       </button>
-      <button className={styles.btnControls__btn} onMouseDown={promptForLink}>
+      <button
+        className={styles.btnControls__btn}
+        onMouseDown={(e) => removeLink(e)}
+      >
         <FaUnlink className={styles.btnControls__icon} />
       </button>
       {showURLInput && (
