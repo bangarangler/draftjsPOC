@@ -8,6 +8,7 @@ import {
   CompositeDecorator,
   KeyBindingUtil,
   getDefaultKeyBinding,
+  Modifier,
 } from "draft-js";
 import "draft-js/dist/Draft.css";
 
@@ -20,7 +21,7 @@ import styles from "./draftEditor.module.scss";
 import BtnControls from "./BtnControls/BtnControls";
 import { LinkControls } from "./decorators/linkDecorator";
 
-const DraftEditor = () => {
+const DraftEditor = ({ insertTextContent, setInsertTextContent }) => {
   const decorators = new CompositeDecorator([
     // FOR LINKS
     {
@@ -82,6 +83,20 @@ const DraftEditor = () => {
     }
     return getDefaultKeyBinding(e);
   }
+
+  // ================================ TESTING INSERT TEXT CONTENT SECTION ================================ //
+  useEffect(() => {
+    if (insertTextContent !== "") {
+      console.log("resetting insertTextContent");
+      const contentState = editorState.getCurrentContent();
+      const targetRange = editorState.getSelection();
+      const text = insertTextContent;
+      const ncs = Modifier.insertText(contentState, targetRange, text);
+      setEditorState(EditorState.push(editorState, ncs, "insert-fragment"));
+      setInsertTextContent("");
+    }
+  }, [insertTextContent]);
+  // ================================ END TESTING INSERT TEXT CONTENT SECTION ================================ //
 
   const pluarisBlockQuoteStyle = (contentBlock) => {
     const type = contentBlock.getType();
